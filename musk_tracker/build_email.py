@@ -1,8 +1,10 @@
 """Assemble the daily Musk YouTube email from out/<date>/.
 
-Usage: python3 build_email.py --date 2026-10-19 [--selected ID ID ...] [--note "..."]
+Usage: python3 build_email.py --date 2026-10-19 [--selected ID ID ...] [--backfill ID ...] [--note "..."]
 Reads candidates.json, transcripts/<id>.status.json and transcripts/<id>.summary.md,
 writes email_subject.txt, email.txt, email.html in the same folder.
+--backfill lists earlier-reported videos whose summaries were produced late (for example,
+after YouTube access was restored); they get their own section and do not count as new.
 """
 import argparse
 import glob
@@ -66,12 +68,20 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", required=True)
     ap.add_argument("--selected", nargs="*", default=None, help="video ids chosen as Musk-speaking (default: all with status files)")
+    ap.add_argument("--backfill", nargs="*", default=[], help="earlier-reported video ids summarized late")
     ap.add_argument("--note", default="", help="extra line for the top of the email")
     ap.add_argument("--root", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "out"))
     args = ap.parse_args()
     d = os.path.join(args.root, args.date)
     cand = json.load(open(os.path.join(d, "candidates.json")))
-    meta = {v["video_id"]: v for v in cand["videos"]}
+    meta = {}
+    for p in sorted(glob.glob(os.path.join(args.root, "*", "candidates.json"))):
+        try:
+            for v in json.load(open(p)).get("videos", []):
+                meta[v["video_id"]] = v
+        except Exception:
+            pass
+    meta.update({v["video_id"]: v for v in cand["videos"]})
     tdir = os.path.join(d, "transcripts")
     statuses = {}
     for p in glob.glob(os.path.join(tdir, "*.status.json")):
@@ -93,11 +103,16 @@ def main():
         else:
             failed.append((vid, (s or {}).get("reason", "not_attempted")))
     ok.sort(key=lambda v: -(meta.get(v, {}).get("length_seconds") or 0))
+    back_ok = [v for v in args.backfill if (statuses.get(v) or {}).get("ok")
+               and os.path.exists(os.path.join(tdir, f"{v}.summary.md"))]
+    sel_set |= set(args.backfill)
 
     others = [v for v in cand["videos"] if v["video_id"] not in sel_set and v.get("latin_ratio", 1) >= 0.7]
     others.sort(key=lambda v: -views_num(v.get("views_text")))
 
     subject = f"일론 머스크 유튜브 데일리 {args.date} (영상 {len(selected)}개)"
+    if back_ok:
+        subject += f" + 이전 영상 소급 요약 {len(back_ok)}개"
     md = [f"# 일론 머스크 유튜브 데일리 {args.date}", ""]
     if args.note:
         md += [args.note, ""]
@@ -112,6 +127,18 @@ def main():
     for vid in ok:
         md += ["## " + label(vid), ""]
         md += [open(os.path.join(tdir, f"{vid}.summary.md")).read().strip(), ""]
+    if args.backfill:
+        md += ["## 이전 보고 영상의 3분 단위 소급 요약", "",
+               "앞서 자막 접근이 막혀 링크만 보냈던 영상들이다.", ""]
+        back_failed = [v for v in args.backfill if v not in back_ok]
+        if back_failed:
+            md += [f"- {label(v)} https://www.youtube.com/watch?v={v} : 소급 요약 못 함, "
+                   f"{REASON_KO.get((statuses.get(v) or {}).get('reason', ''), (statuses.get(v) or {}).get('reason', '시도하지 않음'))}"
+                   for v in back_failed]
+            md.append("")
+        for vid in back_ok:
+            md += ["## " + label(vid), ""]
+            md += [open(os.path.join(tdir, f"{vid}.summary.md")).read().strip(), ""]
     if failed:
         md += ["## 자막을 받지 못한 영상", ""]
         for vid, reason in failed:
