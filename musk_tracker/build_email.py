@@ -82,6 +82,21 @@ def main():
         except Exception:
             pass
     meta.update({v["video_id"]: v for v in cand["videos"]})
+    wanted = list(args.selected or []) + list(args.backfill)
+    missing = [v for v in wanted if v not in meta]
+    if missing:  # videos older than any candidates file: look up title and channel
+        try:
+            from innertube import InnerTube
+            it = InnerTube()
+            for vid in missing:
+                try:
+                    det = it.video_details(vid)
+                    meta[vid] = {"video_id": vid, "title": det.get("title") or vid, "channel": det.get("channel") or "",
+                                 "url": f"https://www.youtube.com/watch?v={vid}"}
+                except Exception:
+                    pass
+        except Exception:
+            pass
     tdir = os.path.join(d, "transcripts")
     statuses = {}
     for p in glob.glob(os.path.join(tdir, "*.status.json")):
@@ -92,7 +107,8 @@ def main():
 
     def label(vid):
         m = meta.get(vid, {})
-        return f"{m.get('title', vid)} ({m.get('channel', '')}, {m.get('length_text', '')})"
+        info = ", ".join(x for x in (m.get("channel", ""), m.get("length_text", "")) if x)
+        return f"{m.get('title', vid)} ({info})" if info else m.get("title", vid)
 
     ok, failed = [], []
     for vid in selected:
