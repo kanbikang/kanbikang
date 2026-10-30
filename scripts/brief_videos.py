@@ -66,7 +66,9 @@ def recommended_videos(md, limit):
             continue
         seen.add(m.group(1))
         text = re.sub(r"^(참고|예정)(\([^)]*\))?:\s*", "", l[2:])
-        title = text.split(" (")[0].strip()
+        # the metadata parenthesis is the last " (" before the link; titles may contain their own
+        cut = text.rfind(" (", 0, max(text.find("http"), 0))
+        title = (text[:cut] if cut > 0 else text.split(" (")[0]).strip()
         inner = text[len(title):].strip()
         channel = inner[1:].split(",")[0].strip() if inner.startswith("(") else ""
         out.append({"video_id": m.group(1), "title": title, "channel": channel,
