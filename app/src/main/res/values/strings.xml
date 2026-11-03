@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">출퇴근 기록</string>
+    <string name="widget_label">출퇴근 기록</string>
+    <string name="widget_description">홈 화면에서 출근·퇴근 시각을 한 번에 기록합니다.</string>
+</resources>
