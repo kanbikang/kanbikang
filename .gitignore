@@ -7,3 +7,4 @@ local.properties
 captures/
 .kotlin/
 /dist/
+keystore/debug.keystore

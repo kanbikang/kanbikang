@@ -7,6 +7,15 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// 저장소에는 base64 텍스트(debug.keystore.b64)만 두고, 빌드 때 바이너리 키스토어로 복원한다.
+val debugKeystore = rootProject.file("keystore/debug.keystore")
+if (!debugKeystore.exists()) {
+    val encoded = rootProject.file("keystore/debug.keystore.b64")
+    if (encoded.exists()) {
+        debugKeystore.writeBytes(java.util.Base64.getMimeDecoder().decode(encoded.readText()))
+    }
+}
+
 android {
     namespace = "com.kanbikang.attendance"
     compileSdk = 35

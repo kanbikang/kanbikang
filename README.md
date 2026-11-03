@@ -40,5 +40,5 @@ GitHub Actions가 푸시할 때마다 디버그 APK를 빌드해 **Releases**의
 ## 개발 정보
 
 - Kotlin, Jetpack Compose, Room, Jetpack Glance / minSdk 26, targetSdk 35
-- 빌드: `./gradlew assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`
-- `keystore/debug.keystore`는 CI에서 매번 같은 서명으로 빌드해 재설치(업데이트)가 되도록 넣어 둔 디버그 전용 키입니다.
+- 빌드: Gradle 8.11.1, JDK 17에서 `gradle assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`
+- `keystore/debug.keystore.b64`는 CI에서 매번 같은 서명으로 빌드해 재설치(업데이트)가 되도록 넣어 둔 디버그 전용 키입니다.
