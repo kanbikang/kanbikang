@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Base64
 
 plugins {
     alias(libs.plugins.android.application)
@@ -12,7 +13,7 @@ val debugKeystore = rootProject.file("keystore/debug.keystore")
 if (!debugKeystore.exists()) {
     val encoded = rootProject.file("keystore/debug.keystore.b64")
     if (encoded.exists()) {
-        debugKeystore.writeBytes(java.util.Base64.getMimeDecoder().decode(encoded.readText()))
+        debugKeystore.writeBytes(Base64.getMimeDecoder().decode(encoded.readText()))
     }
 }
 
