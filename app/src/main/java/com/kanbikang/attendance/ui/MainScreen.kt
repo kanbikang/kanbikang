@@ -2,6 +2,9 @@
 
 package com.kanbikang.attendance.ui
 
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -32,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kanbikang.attendance.data.Times
 import com.kanbikang.attendance.data.WorkRecord
+import com.kanbikang.attendance.reminder.ReminderNotifier
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -64,9 +70,27 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var editor by remember { mutableStateOf<EditorTarget?>(null) }
+    var showReminderSettings by remember { mutableStateOf(false) }
+
+    // 첫 실행 때 알림 권한을 한 번 요청한다(안드로이드 13 이상).
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !ReminderNotifier.notificationsAllowed(context)) {
+            permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("출퇴근 기록") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("출퇴근 기록") },
+                actions = {
+                    IconButton(onClick = { showReminderSettings = true }) {
+                        Icon(Icons.Filled.Notifications, contentDescription = "알림 설정")
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { editor = EditorTarget.Add },
@@ -99,6 +123,10 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                 RecordList(records = records, onClick = { editor = EditorTarget.Edit(it) })
             }
         }
+    }
+
+    if (showReminderSettings) {
+        ReminderSettingsDialog(onDismiss = { showReminderSettings = false })
     }
 
     editor?.let { target ->

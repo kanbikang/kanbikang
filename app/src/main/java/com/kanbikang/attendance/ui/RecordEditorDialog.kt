@@ -144,7 +144,7 @@ fun RecordEditorDialog(
 }
 
 @Composable
-private fun FieldRow(label: String, value: String, onClick: () -> Unit) {
+internal fun FieldRow(label: String, value: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -181,11 +181,11 @@ private fun DatePickDialog(initial: LocalDate, onPick: (LocalDate) -> Unit, onDi
 }
 
 @Composable
-private fun TimePickDialog(
+internal fun TimePickDialog(
     title: String,
     initial: LocalTime,
     onPick: (LocalTime) -> Unit,
-    onClear: () -> Unit,
+    onClear: (() -> Unit)?,
     onDismiss: () -> Unit,
 ) {
     val state = rememberTimePickerState(
@@ -202,7 +202,9 @@ private fun TimePickDialog(
         },
         dismissButton = {
             Row {
-                TextButton(onClick = onClear) { Text("지우기") }
+                if (onClear != null) {
+                    TextButton(onClick = onClear) { Text("지우기") }
+                }
                 TextButton(onClick = onDismiss) { Text("취소") }
             }
         },
