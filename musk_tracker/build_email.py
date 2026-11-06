@@ -15,7 +15,7 @@ import re
 
 REASON_KO = {
     "network_blocked": "자막 접근 차단 (환경 설정 Network access의 Allowed domains에 youtube.com, www.youtube.com 추가 필요)",
-    "bot_wall": "유튜브 봇 차단으로 자막을 받지 못함",
+    "bot_wall": "유튜브가 클라우드 서버 접속을 봇으로 판단해 차단, 자막을 받지 못함",
     "no_captions": "자막 없음",
     "unavailable": "영상 비공개 또는 삭제",
     "error": "자막 추출 오류",

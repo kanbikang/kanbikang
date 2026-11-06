@@ -4,7 +4,7 @@
       Finds YouTube links in the brief's "## 영상과 팟캐스트 추천" section, runs
       musk_tracker/transcript.py on each (3-minute windows) into
       musk_tracker/out/brief-<date>/transcripts/, and writes manifest.json there.
-      After the first network_blocked result it stops trying the rest.
+      After the first network_blocked or bot_wall result it stops trying the rest.
   Then one subagent per video with status ok writes <id>.brief.md there,
   following scripts/BRIEF_VIDEO_PROMPT.md.
   python3 scripts/brief_videos.py insert 2026-10-25
@@ -25,7 +25,7 @@ SUM_HEADER = "## 영상 요약 (자막 기반)"
 YT = re.compile(r"https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([A-Za-z0-9_-]{11})")
 REASON_KO = {
     "network_blocked": "자막 접근 차단, youtube.com 미허용",
-    "bot_wall": "유튜브 봇 차단",
+    "bot_wall": "유튜브가 클라우드 서버 접속을 봇으로 판단해 차단",
     "no_captions": "자막 없음",
     "unavailable": "비공개 또는 삭제",
     "error": "자막 추출 오류",
@@ -93,7 +93,7 @@ def cmd_fetch(args):
         st = json.load(open(st_path)) if os.path.exists(st_path) else {"ok": False, "reason": "error"}
         v["status"] = "ok" if st.get("ok") else st.get("reason", "error")
         v["windows"] = st.get("windows")
-        if v["status"] == "network_blocked":
+        if v["status"] in ("network_blocked", "bot_wall"):
             blocked = True
     json.dump({"date": args.date, "videos": vids}, open(os.path.join(tdir, "manifest.json"), "w"),
               ensure_ascii=False, indent=1)

@@ -20,10 +20,12 @@ def _fmt(sec):
 
 def classify_error(err):
     s = str(err).lower()
+    # YouTube's bot check redirects to google.com/sorry, which can also surface as a proxy error,
+    # so look for the bot-check signals before the generic network ones.
+    if any(k in s for k in ("not a bot", "/sorry/", "sign in to confirm", "ipblocked", "requestblocked", "too many requests", "429")):
+        return "bot_wall"
     if any(k in s for k in ("name resolution", "nodename", "connection", "proxy", "tunnel", "403", "timed out", "max retries")):
         return "network_blocked"
-    if any(k in s for k in ("sign in", "bot", "ipblocked", "requestblocked", "too many requests", "429")):
-        return "bot_wall"
     if any(k in s for k in ("transcriptsdisabled", "notranscriptfound", "no transcript", "subtitles are disabled", "no automatic captions")):
         return "no_captions"
     if "unavailable" in s or "private" in s:
