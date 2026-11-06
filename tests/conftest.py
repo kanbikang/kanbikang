@@ -8,8 +8,12 @@ import pytest
 import uvicorn
 from fastapi.testclient import TestClient
 
-from sns.config import Settings
-from sns.main import create_app
+from messenger.config import Settings
+from messenger.main import create_app
+
+
+def auth(token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
@@ -21,10 +25,6 @@ def settings(tmp_path) -> Settings:
 def client(settings):
     with TestClient(create_app(settings)) as test_client:
         yield test_client
-
-
-def auth(token: str) -> dict[str, str]:
-    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
@@ -44,8 +44,9 @@ def register(client):
 
 @pytest.fixture
 def personal_token(client):
-    def _issue(session_headers: dict[str, str], scopes=("read", "write"), name: str = "Claude") -> str:
-        response = client.post("/api/tokens", json={"name": name, "scopes": list(scopes)}, headers=session_headers)
+    def _issue(session_headers, scopes=("read", "write"), name="Claude", conversation_ids=None) -> str:
+        body = {"name": name, "scopes": list(scopes), "conversation_ids": conversation_ids}
+        response = client.post("/api/tokens", json=body, headers=session_headers)
         assert response.status_code == 201, response.text
         return response.json()["token"]
 
@@ -54,7 +55,7 @@ def personal_token(client):
 
 @pytest.fixture
 def live_server(settings):
-    """Runs the app on a real port so MCP clients can connect over Streamable HTTP."""
+    """Runs the app on a real port so MCP and WebSocket clients can connect."""
     app = create_app(settings)
     sock = socket.socket()
     sock.bind(("127.0.0.1", 0))

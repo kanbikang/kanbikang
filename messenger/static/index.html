@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kanbikang</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="auth" class="auth" hidden></div>
+  <div id="shell" class="shell" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <a class="brand" href="#/">Kanbikang</a>
+        <a class="button primary small" href="#/new">새 대화</a>
+      </div>
+      <nav class="nav">
+        <a href="#/contacts" data-nav="contacts">친구</a>
+        <a href="#/ai" data-nav="ai">AI 연결</a>
+        <a href="#/settings" data-nav="settings">설정</a>
+        <button type="button" class="link" id="logout">로그아웃</button>
+      </nav>
+      <div class="connection" id="connection" hidden>연결이 끊겼습니다. 다시 연결하는 중...</div>
+      <div class="conversation-list" id="conversation-list"></div>
+    </aside>
+    <main class="main" id="main"></main>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

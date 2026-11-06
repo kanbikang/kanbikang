@@ -4,7 +4,7 @@ import hmac
 import secrets
 
 _SCRYPT_N, _SCRYPT_R, _SCRYPT_P = 2**14, 8, 1
-TOKEN_PREFIX = "sns_"
+TOKEN_PREFIX = "kbk_"
 
 
 def _b64(raw: bytes) -> str:

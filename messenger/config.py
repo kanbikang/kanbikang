@@ -10,15 +10,15 @@ LOCAL_HOSTS = ("localhost:*", "127.0.0.1:*", "[::1]:*")
 
 @dataclass(frozen=True)
 class Settings:
-    database_url: str = "sqlite:///./sns.db"
+    database_url: str = "sqlite:///./kanbikang.db"
     # Host headers the MCP endpoint accepts (DNS rebinding protection). "*" disables the check.
     allowed_hosts: tuple[str, ...] = LOCAL_HOSTS
 
     @classmethod
     def from_env(cls) -> Settings:
-        hosts = os.environ.get("SNS_ALLOWED_HOSTS")
+        hosts = os.environ.get("KANBIKANG_ALLOWED_HOSTS")
         return cls(
-            database_url=os.environ.get("SNS_DATABASE_URL", cls.database_url),
+            database_url=os.environ.get("KANBIKANG_DATABASE_URL", cls.database_url),
             allowed_hosts=tuple(h.strip() for h in hosts.split(",") if h.strip()) if hosts else LOCAL_HOSTS,
         )
 

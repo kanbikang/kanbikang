@@ -1,7 +1,7 @@
 [project]
-name = "kanbikang-sns"
+name = "kanbikang"
 version = "0.1.0"
-description = "AI 비서(MCP)와 API로 완전히 연결된 SNS"
+description = "AI 비서(MCP)와 API로 완전히 연결된 메신저"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -18,15 +18,15 @@ dev = [
 ]
 
 [project.scripts]
-sns-server = "sns.main:run"
-sns-mcp-stdio = "sns.mcp_server:run_stdio"
+kanbikang-server = "messenger.main:run"
+kanbikang-mcp-stdio = "messenger.mcp_server:run_stdio"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["sns"]
+packages = ["messenger"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
